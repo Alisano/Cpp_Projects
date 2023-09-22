@@ -315,66 +315,77 @@ int main(void)
     geom_obj* objects = (geom_obj*)malloc(sizeof(geom_obj));
     thread_struct vptr_args[THREAD_COUNT];
 
+    float lastTime = 0.0;
+    float frameTime = 0.0;
+    float framerate = 120.0;
+    float step = int(count_of_falling_balls / THREAD_COUNT);
+    int current_index = 0;
+
     while (!glfwWindowShouldClose(window))
     {
         index_of_obj = 0;
+        frameTime = glfwGetTime();
         glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
         glViewport(0, 0, WIDTH, HEIGHT);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
 
-        float gap = 200;
-        float di = 6 * static_circle_radius;
-        float dj = 6 * static_circle_radius;
-        float x0 = -OX + static_circle_radius;
-        float y0 = -OY + static_circle_radius + gap + map_y * 2 * static_circle_radius + dj * map_y - 50;
+        if (frameTime - lastTime >= 1.0 / framerate) {
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            float gap = 200;
+            float di = 6 * static_circle_radius;
+            float dj = 6 * static_circle_radius;
+            float x0 = -OX + static_circle_radius;
+            float y0 = -OY + static_circle_radius + gap + map_y * 2 * static_circle_radius + dj * map_y - 50;
 
 
-        for (int i = 0; i < map_x; i ++) {
-            for (int j = 0; j > -map_y; j--) {
-                glColor3f(0.0, 0.0, 1.0);
-                circle(x0 + di * i + di * check_even(j) / 2, y0 + dj * j, &objects, true);
+            for (int i = 0; i < map_x; i ++) {
+                for (int j = 0; j > -map_y; j--) {
+                    glColor3f(0.0, 0.0, 1.0);
+                    circle(x0 + di * i + di * check_even(j) / 2, y0 + dj * j, &objects, true);
+                }
             }
-        }
 
-        for (int i = 0; i < map_x; i ++) {
-            float new_gap = y0 - dj * map_y;
-            float x = -OX + 2 * OX / map_x * i;
-            float pos_v1[2] = {x, new_gap};
-            float pos_v2[2] = {x, -OY};
-            line(pos_v1, pos_v2, &objects);
-        }
+            for (int i = 0; i < map_x; i ++) {
+                float new_gap = y0 - dj * map_y;
+                float x = -OX + 2 * OX / map_x * i;
+                float pos_v1[2] = {x, new_gap};
+                float pos_v2[2] = {x, -OY};
+                line(pos_v1, pos_v2, &objects);
+            }
 
-        float pixel_to_coord[2] = {2 * OX / WIDTH, 2 * OY / HEIGHT};
+            float pixel_to_coord[2] = {2 * OX / WIDTH, 2 * OY / HEIGHT};
 
-        float pos_v4[2] = {-OX, OY};
-        float pos_v3[2] = {- di / 5, y0 + 100};
-        line(pos_v3, pos_v4, &objects);
+            float pos_v4[2] = {-OX, OY};
+            float pos_v3[2] = {- di / 5, y0 + 100};
+            line(pos_v3, pos_v4, &objects);
 
-        float pos_v6[2] = {OX, OY};
-        float pos_v5[2] = {di / 5, y0 + 100};
-        line(pos_v5, pos_v6, &objects);
+            float pos_v6[2] = {OX, OY};
+            float pos_v5[2] = {di / 5, y0 + 100};
+            line(pos_v5, pos_v6, &objects);
 
-        float pos_v8[2] = {OX, OY};
-        float pos_v7[2] = {OX, -OY};
-        line(pos_v7, pos_v8, &objects);
+            float pos_v8[2] = {OX, OY};
+            float pos_v7[2] = {OX, -OY};
+            line(pos_v7, pos_v8, &objects);
 
-        float pos_v10[2] = {-OX, OY};
-        float pos_v9[2] = {-OX, -OY};
-        line(pos_v9, pos_v10, &objects);
+            float pos_v10[2] = {-OX, OY};
+            float pos_v9[2] = {-OX, -OY};
+            line(pos_v9, pos_v10, &objects);
 
-        float pos_v12[2] = {OX, -OY};
-        float pos_v11[2] = {-OX, -OY};
-        line(pos_v11, pos_v12, &objects);
+            float pos_v12[2] = {OX, -OY};
+            float pos_v11[2] = {-OX, -OY};
+            line(pos_v11, pos_v12, &objects);
 
-        int current_index = index_of_obj;
+            current_index = index_of_obj;
 
-        float step = int(count_of_falling_balls / THREAD_COUNT);
-
-        for (int i = current_index; i < (current_index + count_of_falling_balls); i++) {
-            glColor3f(1.0, 1.0, 1.0);
-            circle(pos_fall_ball[i - current_index][0], pos_fall_ball[i - current_index][1], &(objects), false);
-            objects[i].mass = fall_ball_mass;
+            for (int i = current_index; i < (current_index + count_of_falling_balls); i++) {
+                glColor3f(1.0, 1.0, 1.0);
+                circle(pos_fall_ball[i - current_index][0], pos_fall_ball[i - current_index][1], &(objects), false);
+                objects[i].mass = fall_ball_mass;
+            }
+            
+            lastTime = glfwGetTime();
+            glfwSwapBuffers(window);
         }
 
         for (int j = 0; j < THREAD_COUNT; j++) {
@@ -396,7 +407,6 @@ int main(void)
                 vel_fall_ball[i - current_index][1] = vptr_args[j].objects[i].vel_fall_ball[1];
             }
         }
-        glfwSwapBuffers(window);
         glfwPollEvents();
     }
     free(objects);
