@@ -21,20 +21,20 @@ float OY = 400;
 double xpos, ypos;
 float GLxpos, GLypos;
 
-float fall_circle_radius = 4;
-float static_circle_radius = 7;
+float fall_circle_radius = 3;
+float static_circle_radius = 10;
 float line_width = 10;
 float cnt_of_circle_pol = 10;
 float angle_circle = 2 * 3.1415926 / cnt_of_circle_pol;
 int index_of_obj = 0;
 float g = 9.8;
 float dt = 0.1;
-const int map_x = 35;
-const int map_y = 10;
-const int count_of_falling_balls = 400;
+const int map_x = 20;
+const int map_y = 4;
+const int count_of_falling_balls = 1000;
 float fall_ball_mass = 1;
 float MAX_SPEED = -10;
-float elasticity = 0.9;
+float elasticity = 0.65;
 int obj_count = 0;
 // const int THREAD_COUNT = 1;
 // pthread_t thread[THREAD_COUNT];
@@ -298,8 +298,8 @@ int main(void)
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
     window = glfwCreateWindow(WIDTH, HEIGHT, "Galton board", NULL, NULL);
     if (!window)
@@ -316,17 +316,22 @@ int main(void)
     
     float pos_fall_ball[count_of_falling_balls][2];
     float vel_fall_ball[count_of_falling_balls][2];
-    float width_x_ball_generation = 2 * sqrt(count_of_falling_balls) * fall_circle_radius;
-    float height_y_ball_generation = 2 * sqrt(count_of_falling_balls) * fall_circle_radius;
+    float width_x_ball_generation = 6 * sqrt(count_of_falling_balls) * fall_circle_radius;
+    float height_y_ball_generation = 6 * sqrt(count_of_falling_balls) * fall_circle_radius;
     float bias_y_ball_generation = -height_y_ball_generation;
 
-    for (int i = 0; i < sqrt(count_of_falling_balls); i++) {
-        for (int j = 0; j < sqrt(count_of_falling_balls); j++) {
-            pos_fall_ball[i + int(j * sqrt(count_of_falling_balls))][0] = -width_x_ball_generation / 2 + width_x_ball_generation / sqrt(count_of_falling_balls) * i;
-            pos_fall_ball[i + int(j * sqrt(count_of_falling_balls))][1] = OY - bias_y_ball_generation - height_y_ball_generation / sqrt(count_of_falling_balls) * j;
-            vel_fall_ball[i + int(j * sqrt(count_of_falling_balls))][0] = 0;
-            vel_fall_ball[i + int(j * sqrt(count_of_falling_balls))][1] = 0;
+    int j = -1;
+    int k = 0;
+    for (int i = 0; i <  count_of_falling_balls ; i++) {
+        if (i % int(sqrt(count_of_falling_balls)) == 0) {
+            j ++;
+            k = 0;
         }
+        pos_fall_ball[i][0] = -width_x_ball_generation / 2 + width_x_ball_generation / sqrt(count_of_falling_balls) * k;
+        pos_fall_ball[i][1] = OY - bias_y_ball_generation - height_y_ball_generation / sqrt(count_of_falling_balls) * j;
+        vel_fall_ball[i][0] = 0;
+        vel_fall_ball[i][1] = 0;
+        k++;
     }
 
     geom_obj* objects = (geom_obj*)malloc(sizeof(geom_obj));
@@ -340,10 +345,10 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         float gap = 200;
-        float di = 4 * static_circle_radius;
-        float dj = 4 * static_circle_radius;
+        float di = 6 * static_circle_radius;
+        float dj = 6 * static_circle_radius;
         float x0 = -OX + static_circle_radius;
-        float y0 = -OY + static_circle_radius + gap + map_y * 2 * static_circle_radius + dj * map_y - 100;
+        float y0 = -OY + static_circle_radius + gap + map_y * 2 * static_circle_radius + dj * map_y - 50;
 
 
         for (int i = 0; i < map_x; i ++) {
@@ -364,23 +369,23 @@ int main(void)
         float pixel_to_coord[2] = {2 * OX / WIDTH, 2 * OY / HEIGHT};
 
         float pos_v4[2] = {-OX, OY};
-        float pos_v3[2] = {- di / 4, y0 + 100};
+        float pos_v3[2] = {- di / 5, y0 + 100};
         line(pos_v3, pos_v4, &objects);
 
         float pos_v6[2] = {OX, OY};
-        float pos_v5[2] = {di / 4, y0 + 100};
+        float pos_v5[2] = {di / 5, y0 + 100};
         line(pos_v5, pos_v6, &objects);
 
-        float pos_v8[2] = {OX - line_width / 2, OY};
-        float pos_v7[2] = {OX - line_width / 2, -OY};
+        float pos_v8[2] = {OX, OY};
+        float pos_v7[2] = {OX, -OY};
         line(pos_v7, pos_v8, &objects);
 
-        float pos_v10[2] = {-OX + line_width / 2, OY};
-        float pos_v9[2] = {-OX + line_width / 2, -OY};
+        float pos_v10[2] = {-OX, OY};
+        float pos_v9[2] = {-OX, -OY};
         line(pos_v9, pos_v10, &objects);
 
-        float pos_v12[2] = {OX, -OY + line_width / 2};
-        float pos_v11[2] = {-OX, -OY + line_width / 2};
+        float pos_v12[2] = {OX, -OY};
+        float pos_v11[2] = {-OX, -OY};
         line(pos_v11, pos_v12, &objects);
 
         int current_index = index_of_obj;
