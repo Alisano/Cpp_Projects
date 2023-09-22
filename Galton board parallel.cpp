@@ -233,7 +233,7 @@ void collision_line(geom_obj* object, geom_obj * objects, int i) {
 }
 
 void collision(geom_obj* object, geom_obj * objects){
-    for (int i = 0; i < index_of_obj; i++) {
+    for (int i = 0; i < obj_count; i++) {
         if (objects[i].obj_id != object->obj_id) {
             switch(objects[i].TypeOfObj){
                 case Circle:
